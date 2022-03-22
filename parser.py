@@ -1,6 +1,3 @@
-# !/usr/bin/python3
-# -*- coding: utf-8 -*-
-
 import xlsxwriter
 import requests
 from bs4 import BeautifulSoup as bs
@@ -55,9 +52,9 @@ def stud_pars(base_url, headers):
                                 for i in contsp:
                                         if '@' in i:
                                                 r = i.split(' ')
-                                        for i in r:
-                                                if '@' in i:
-                                                        email = i                              
+                                                for i in r:
+                                                        if '@' in i:
+                                                                email = i                              
                                 
 
                                 #Минимальное время аренды
