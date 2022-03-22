@@ -52,7 +52,7 @@ def stud_pars(base_url, headers):
                                             if '@' in i:
                                                 email = i                              
                                 
-
+                                
                                 try:
                                     time_ot = div.find('span', attrs = {"title":"Минимальное время аренды"}).text
                                 except:
