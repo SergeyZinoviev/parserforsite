@@ -1,9 +1,9 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import xlsxwriter # pip install XlsxWriter
-import requests # pip install requests
-from bs4 import BeautifulSoup as bs # pip install beautifulsoup4
+import xlsxwriter
+import requests
+from bs4 import BeautifulSoup as bs
 
 headers = {'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36'}
 base_url = f"https://www.studiorent.ru/studios/?city=33&page="
@@ -22,11 +22,14 @@ def stud_pars(base_url, headers):
                         soup = bs(request.content, 'html.parser')
                         divs = soup.find_all("article", "s")
                         process_import = 0
-                        for div in divs:                                
+                        for div in divs: 
+                                #Название студии                               
                                 title = div.find('small', "text-muted").text
-                                                                
+
+                                #Ссылка на студию с подробной информацией и фото                                
                                 href = 'https://www.studiorent.ru'+div.find('a', "sn counters-click")['href']
 
+                                #Адрес
                                 adres = div.find('div', "col-8 col-md-8 col-lg-5 mb-4")
                                 adres.header.decompose()
                                 adres.span.decompose()
@@ -34,39 +37,45 @@ def stud_pars(base_url, headers):
                                 for i in adres:
                                     adrspisok.append(i.text)
                                 adres = adrspisok[1]
-                                metro = adrspisok[-4]
 
+                                #Метро
+                                metro = adrspisok[-4]
+                                #Заходим на подробную страницу с телефоном и остальным
                                 result = requests.get(href)
                                 content = result.text
                                 soup1 = bs(content, 'lxml')
+                                # Телефон
                                 phone = soup1.find('div', 'col-12 col-sm-8 col-lg-5 mt-3').find('a').text
 
+                                #Поиск почты
                                 contact = soup1.find('div', 'col-12 col-sm-8 col-lg-5 mt-3')
                                 contsp = []
                                 for i in contact:
-                                    contsp.append(i.text)
+                                        contsp.append(i.text)
                                 for i in contsp:
-                                    if '@' in i:
-                                        r = i.split(' ')
+                                        if '@' in i:
+                                                r = i.split(' ')
                                         for i in r:
-                                            if '@' in i:
-                                                email = i                              
+                                                if '@' in i:
+                                                        email = i                              
                                 
-                                
-                                try:
-                                    time_ot = div.find('span', attrs = {"title":"Минимальное время аренды"}).text
-                                except:
-                                    time_ot = ''
-                                try:
-                                        company = div.find('span', "rooms").text
-                                except:
-                                        company = 'None'
 
+                                #Минимальное время аренды
+                                try:
+                                        time_ot = div.find('span', attrs = {"title":"Минимальное время аренды"}).text
+                                except:
+                                        time_ot = ''
+                                #Размер студии
+                                try:
+                                        size = div.find('span', "rooms").text
+                                except:
+                                        size = 'None'
+                                #Цена до
                                 second_string = []
                                 text12 = div.find('div', "params_list col-8").find_all('span')
                                 for i in text12:
                                     second_string.append(i.text)
-                               
+                                #Цена от
                                 try:
                                         text1 = div.find('span', "price").text
                                 except:
@@ -75,9 +84,9 @@ def stud_pars(base_url, headers):
                                         text2 = second_string[-1]
                                 except:
                                         text2 = ''
-                                content = f'{text1} - {text2}'
-
-                                all_txt = [title, adres, metro, company, content, time_ot, href, phone, email]
+                                price = f'{text1} - {text2}'
+                                #Все данные с одной студии
+                                all_txt = [title, adres, metro, size, price, time_ot, href, phone, email]
                                 studios.append(all_txt)
                                 process_import += 1
                                 # print(f'Загрузка блока {process_import} из 50')
@@ -103,7 +112,7 @@ def stud_pars(base_url, headers):
                 cell_wrap = workbook.add_format()
                 cell_wrap.set_text_wrap()
 
-                # Ширины колонок
+                # Ширина колонок
                 worksheet.set_column(0, 0, 45) # A 
                 worksheet.set_column(1, 1, 54) # B
                 worksheet.set_column(2, 2, 27) # C
